@@ -2,7 +2,8 @@ import express, { Response } from "express";
 import shell, { ShellString } from "shelljs";
 
 const app = express();
-const port = 2000;
+const PORT = process.env.PORT || 2000;
+const PRYBAR_BINARY = process.env.PRYBAR_BINARY || `/app/prybar-nodejs`;
 
 app.use(express.json());
 
@@ -11,19 +12,24 @@ app.post("/exec", (req, res: Response<{ output: string; error: boolean }>) => {
   if (request_data.code === undefined) {
     res.statusCode = 404;
     res.send({ output: "Error! Please try again", error: true });
+    return;
+  }
+  const code = new Buffer(request_data.code).toString("base64");
+
+  console.dir(code);
+  let commandOutput: ShellString = shell.exec(
+    `echo '${code}' | base64 --decode | xargs -0 ${PRYBAR_BINARY} -q -e`
+  );
+
+  if (commandOutput.code !== 0) {
+    res.send({ output: commandOutput.stderr, error: true });
   } else {
-    const code = request_data.code;
-
-    let commandOutput: ShellString = shell.exec(
-      `/app/prybar-nodejs -q -e '${code}'`
-    );
-
-    if (commandOutput.code !== 0) {
-      res.send({ output: commandOutput.stderr, error: true });
-    } else {
-      res.send({ output: commandOutput.stdout, error: false });
-    }
+    res.send({ output: commandOutput.stdout, error: false });
   }
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(PORT, () =>
+  console.log(
+    `Prybar server listening on port ${PORT}. Prybar binary is ${PRYBAR_BINARY}!`
+  )
+);

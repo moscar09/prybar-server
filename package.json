@@ -18,6 +18,6 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "start-server": "PORT=8080 nodemon -r esm src/index.ts"
+    "start-server": "PORT=2000 PRYBAR_BINARY='./prybar-nodejs' nodemon -r esm src/index.ts"
   }
 }
