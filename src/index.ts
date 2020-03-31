@@ -1,5 +1,5 @@
 import express, { Response } from "express";
-import { codeRunner } from "./runner/codeRunner";
+import { codeRunner } from "runner/codeRunner";
 import { SuccessResponse, ErrorResponse } from "runner/types";
 
 const app = express();

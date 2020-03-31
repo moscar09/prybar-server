@@ -9,6 +9,7 @@
   "private": false,
   "dependencies": {
     "@types/express": "^4.17.3",
+    "@types/jest": "^25.1.4",
     "@types/shelljs": "^0.8.7",
     "esm": "^3.2.25",
     "express": "^4.17.1",
@@ -21,9 +22,13 @@
     "start-server": "PORT=2000 PRYBAR_NODEJS='/app/prybar-nodejs' node dist/index.js",
     "build:dev": "webpack --config webpack.config.js",
     "build:prod": "webpack --config webpack.config.prod.js",
-    "watch": "webpack-watch-server --config webpack.config.js"
+    "watch": "webpack-watch-server --config webpack.config.js",
+    "test": "jest -c jest.tsc.config.js"
   },
   "devDependencies": {
+    "babel-jest": "^25.2.4",
+    "jest": "^25.2.4",
+    "ts-jest": "^25.3.0",
     "ts-loader": "^6.2.2",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
