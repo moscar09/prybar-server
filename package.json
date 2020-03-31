@@ -4,7 +4,7 @@
   "description": "Exposes prybar through a http interface",
   "main": "index.js",
   "repository": "github.com/moscar09/prybar-server",
-  "author": "oscar.marginean@gmail.com",
+  "author": "hello@oscar.sh",
   "license": "GPL-2.0",
   "private": false,
   "dependencies": {
@@ -18,6 +18,15 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "start-server": "PORT=2000 PRYBAR_BINARY='./prybar-nodejs' nodemon -r esm src/index.ts"
+    "start-server": "PORT=2000 PRYBAR_NODEJS='/app/prybar-nodejs' node dist/index.js",
+    "build:dev": "webpack --config webpack.config.js",
+    "build:prod": "webpack --config webpack.config.prod.js",
+    "watch": "webpack-watch-server --config webpack.config.js"
+  },
+  "devDependencies": {
+    "ts-loader": "^6.2.2",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-watch-server": "^1.2.1"
   }
 }
