@@ -1,8 +1,13 @@
 import shell, { ShellString } from "shelljs";
-import { SuccessResponse, ErrorResponse } from "./types";
+import { SuccessResponse, ErrorResponse, ErrorTypes } from "./types";
+import { parseInt } from "lodash";
 
 const RUNTIMES: { [lang: string]: string } = {
   js: process.env.PRYBAR_NODEJS || `./prybar-nodejs`
+};
+
+const parseErrorMessage = (message: string): ErrorTypes => {
+  return ErrorTypes.SYNTAX_ERROR;
 };
 
 const formatSuccessMessage = (output: string): SuccessResponse => {
@@ -13,11 +18,33 @@ const formatSuccessMessage = (output: string): SuccessResponse => {
 
 const formatErrorMessage = (output: string): ErrorResponse => {
   const rows: string[] = output.split("\n");
+  const rowNumber = parseInt(rows[0].split(":")[1]);
+  const colNumber = rows[2].indexOf("^");
+  const message = rows[4];
+  const rawErrorMessage = rows.slice(1, 5);
 
-  return { output: output, error: true };
+  let errorMessage;
+  let errorType = parseErrorMessage(message);
+  if (errorType === ErrorTypes.SYNTAX_ERROR) {
+    errorMessage = message.split(": ")[1];
+  } else {
+    errorMessage = message;
+  }
+
+  return {
+    error: true,
+    rowNumber: rowNumber,
+    colNumber: colNumber === -1 ? undefined : colNumber + 1,
+    errorMessage: errorMessage,
+    errorType: errorType,
+    rawErrorMessage: rawErrorMessage
+  };
 };
 
-export const codeRunner = (code: string, lang: string) => {
+export const codeRunner = (
+  code: string,
+  lang: string
+): SuccessResponse | ErrorResponse => {
   if (RUNTIMES[lang] === undefined) {
     throw new Error("This language is not supported");
   }
@@ -27,7 +54,8 @@ export const codeRunner = (code: string, lang: string) => {
   code = Buffer.from(code).toString("base64");
 
   let commandOutput: ShellString = shell.exec(
-    `echo '${code}' | base64 --decode | xargs -0 ${binary} -q -e`
+    `echo '${code}' | base64 --decode | xargs -0 ${binary} -q -e`,
+    { silent: true }
   );
 
   if (commandOutput.code !== 0) {
