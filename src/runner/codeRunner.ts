@@ -6,8 +6,37 @@ const RUNTIMES: { [lang: string]: string } = {
   js: process.env.PRYBAR_NODEJS || `./prybar-nodejs`
 };
 
-const parseErrorMessage = (message: string): ErrorTypes => {
-  return ErrorTypes.SYNTAX_ERROR;
+const parseErrorMessage = (
+  message: string
+): { errorType: ErrorTypes; errorMessage: string } => {
+  let [errorTypeTxt, errorMessage] = message.split(": ");
+
+  let errorType = ErrorTypes.ERROR;
+  switch (errorTypeTxt) {
+    case "SyntaxError":
+      errorType = ErrorTypes.SYNTAX_ERROR;
+      break;
+    case "ReferenceError":
+      errorType = ErrorTypes.REFERENCE_ERROR;
+      break;
+    case "EvalError":
+      errorType = ErrorTypes.EVAL_ERROR;
+      break;
+    case "InternalError":
+      errorType = ErrorTypes.INTERNAL_ERROR;
+      break;
+    case "RangeError":
+      errorType = ErrorTypes.RANGE_ERROR;
+      break;
+    case "TypeError":
+      errorType = ErrorTypes.TYPE_ERROR;
+      break;
+    case "URIError":
+      errorType = ErrorTypes.URI_ERROR;
+      break;
+  }
+
+  return { errorType: errorType, errorMessage };
 };
 
 const formatSuccessMessage = (output: string): SuccessResponse => {
@@ -23,13 +52,7 @@ const formatErrorMessage = (output: string): ErrorResponse => {
   const message = rows[4];
   const rawErrorMessage = rows.slice(1, 5);
 
-  let errorMessage;
-  let errorType = parseErrorMessage(message);
-  if (errorType === ErrorTypes.SYNTAX_ERROR) {
-    errorMessage = message.split(": ")[1];
-  } else {
-    errorMessage = message;
-  }
+  let { errorType, errorMessage } = parseErrorMessage(message);
 
   return {
     error: true,

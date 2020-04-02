@@ -27,7 +27,7 @@ describe("The JS code runner happy path", () => {
   });
 });
 
-describe("The JS code runner with syntax error", () => {
+describe("The JS code runner errors", () => {
   it("throws a correctly formatted error with no col number", () => {
     const code = `console.log(`;
     const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
@@ -59,5 +59,71 @@ describe("The JS code runner with syntax error", () => {
     expect(result.colNumber).toBe(13);
     expect(result.errorType).toBe(ErrorTypes.SYNTAX_ERROR);
     expect(result.errorMessage).toBe("Unexpected token |");
+  });
+
+  it("correctly throws a reference error", () => {
+    const code = `console.log(a)`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(13);
+    expect(result.errorType).toBe(ErrorTypes.REFERENCE_ERROR);
+    expect(result.errorMessage).toBe("a is not defined");
+  });
+
+  it("correctly throws an (experimental) eval error", () => {
+    const code = `throw new EvalError('ERROR!', 'someFile.js', 10);`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(1);
+    expect(result.errorType).toBe(ErrorTypes.EVAL_ERROR);
+    expect(result.errorMessage).toBe("ERROR!");
+  });
+
+  it("correctly throws a range error", () => {
+    const code = `const arr = Array(-1)`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(13);
+    expect(result.errorType).toBe(ErrorTypes.RANGE_ERROR);
+    expect(result.errorMessage).toBe("Invalid array length");
+  });
+
+  it("correctly throws a type error", () => {
+    const code = `const a = 2; a.split('/')`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(16);
+    expect(result.errorType).toBe(ErrorTypes.TYPE_ERROR);
+    expect(result.errorMessage).toBe("a.split is not a function");
+  });
+
+  it("correctly throws a type error", () => {
+    const code = `decodeURIComponent('%')`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(1);
+    expect(result.errorType).toBe(ErrorTypes.URI_ERROR);
+    expect(result.errorMessage).toBe("URI malformed");
+  });
+
+  it("correctly throws a generic error", () => {
+    const code = `throw new Error("ERROR!")`;
+    const result: ErrorResponse = codeRunner(code, LANG) as ErrorResponse;
+
+    expect(result.error).toBeTruthy();
+    expect(result.rowNumber).toBe(1);
+    expect(result.colNumber).toBe(1);
+    expect(result.errorType).toBe(ErrorTypes.ERROR);
+    expect(result.errorMessage).toBe("ERROR!");
   });
 });
