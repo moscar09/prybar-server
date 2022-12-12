@@ -13,7 +13,7 @@
     "@types/lodash": "^4.14.149",
     "@types/shelljs": "^0.8.7",
     "esm": "^3.2.25",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "lodash": "^4.17.15",
     "nodemon": "^2.0.2",
     "shelljs": "^0.8.3",
